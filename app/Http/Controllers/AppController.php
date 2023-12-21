@@ -13,7 +13,7 @@ class AppController extends Controller
      */
     public function index(Request $request)
     {
-        $posts = $request->query('search') ? Post::with('categories')->where('category', $request->query('search'))->get() : Post::with('categories')->get();
+        $posts = $request->query('search') ? Post::with('categories')->where('category', $request->query('search'))->get()->sortDesc() : Post::with('categories')->get()->sortDesc();
         $category = Category::all();
         $data = [
             'category' => $category,
@@ -33,16 +33,16 @@ class AppController extends Controller
 
     public function search(Request $request)
     {
-        $posts = Post::with('categories')->where('category', $request->search)->get();
-        return redirect()->to('/')->with('results', $posts);
+        $posts = Post::with('categories')->where('category', $request->search)->get()->sortDesc();
+        return $posts;
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function profile($username)
+    public function profile()
     {
-        $posts = Post::with('categories')->where('username', $username)->get();
+        $posts = Post::with('categories')->where('username', auth()->user()->username)->get()->sortDesc();
         $category = Category::all();
         $data = [
             'posts' => $posts,
@@ -50,13 +50,22 @@ class AppController extends Controller
         ];
         return view('profile', $data);
     }
+    public function profilePost()
+    {
+        $posts = Post::join('categories', 'posts.category', '=', 'categories.id')
+            ->select('posts.*', 'categories.name as category_name')
+            ->where('posts.username', auth()->user()->username)
+            ->get();
+
+        return  $posts->values()->all();
+    }
 
     /**
      * Store a newly created resource in storage.
      */
     public function account($username)
     {
-        $posts = Post::where('username', $username)->get();
+        $posts = Post::where('username', $username)->get()->sortDesc();
         $category = Category::all();
         $data = [
             'category' => $category,

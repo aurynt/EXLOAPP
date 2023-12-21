@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Post;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
@@ -27,13 +26,18 @@ class PostController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request): RedirectResponse
+    public function create(Request $request)
     {
         $request->validate([
-            'username' => 'required|max:50',
+            'username' => 'required|max:50|lowercase',
             'description' => 'required',
             'photo' => 'required|file|mimes:jpeg,png,jpg,avif',
             'category' => 'required',
+            'type' => 'required'
+        ], [
+            'type' => [
+                'required' => 'The location field is required.'
+            ]
         ]);
 
         $file = $request->file('photo');
@@ -51,12 +55,12 @@ class PostController extends Controller
         $post->type = $request->type;
         $post->category = $request->category;
 
-        $res = $post->save();
-
-        if ($res) {
-            return redirect('/');
+        try {
+            $res = $post->save();
+            return $res;
+        } catch (\Throwable $err) {
+            return $err;
         }
-        return redirect()->back()->withInput();
     }
 
     /**
@@ -70,9 +74,10 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Post $post)
+    public function show(Post $post, $condition, $value)
     {
-        //
+        $posts = $condition == 'id' ? $post->find($value) : $post->where($condition, $value)->get();
+        return $posts;
     }
 
     /**
@@ -95,7 +100,7 @@ class PostController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'username' => 'required|max:50',
+            'username' => 'required|max:50|lowercase',
             'description' => 'required',
             'category' => 'required',
         ]);
@@ -118,25 +123,31 @@ class PostController extends Controller
         $post->type = $request->type;
         $post->category = $request->category;
 
-        $res = $post->save();
-
-        if ($res) {
-            return redirect()->back();
+        try {
+            $res = $post->save();
+            if ($res) {
+                return [
+                    'data' => $post->find($id),
+                    'res' => $res,
+                ];
+            }
+        } catch (\Throwable $err) {
+            return $err;
         }
-        return redirect()->back()->withInput();
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Post $post, Request $request)
+    public function destroy(Request $request)
     {
-        $post = Post::find($request->id);
-        Storage::delete('public/post/' . $post->foto);
-        $res = $post->delete();
-        if ($res) {
-            return redirect()->back();
+        try {
+            $post = Post::find($request->id);
+            Storage::delete('public/post/' . $post->foto);
+            $res = $post->delete();
+            return $res;
+        } catch (\Throwable $err) {
+            throw $err;
         }
-        return redirect()->back();
     }
 }

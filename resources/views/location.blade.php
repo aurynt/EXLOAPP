@@ -30,9 +30,9 @@
             <li class="capitalize"><a href="{{ route('post') }}">post</a></li>
             <li class="capitalize"><a href="{{ route('location') }}">location</a></li>
         </ul>
-        <a href="/profile/saia" class="flex gap-1">
+        <a href="{{ route('profile') }}" class="flex gap-1">
             <div class="h-6 w-6 rounded-full bg-blue-400 block"></div>
-            <p>Heri</p>
+            <p>{{ auth()->user()->name ?? 'guest' }}</p>
         </a>
     </div>
     <div class="flex justify-center items-center rounded-lg">
@@ -49,16 +49,17 @@
             @switch($item['type'])
                 @case('marker')
                 L.marker({!! $item->coordinat !!}).addTo(map)
-                    .bindPopup("{{ '@' . $item->username }}");
+                    .bindPopup(`<a href="/account/{{ $item->username }}">{{ '@' . $item->username }}</a>`);
                 @break
 
                 @case('polygon')
-                L.polygon({!! $item->coordinat !!}).addTo(map).bindPopup("{{ '@' . $item->username }}");
+                L.polygon({!! $item->coordinat !!}).addTo(map).bindPopup(
+                    `<a href="/account/{{ $item->username }}">{{ '@' . $item->username }}</a>`);
                 @break
 
                 @case('polyline')
                 L.polyline({!! $item->coordinat !!}).addTo(map)
-                    .bindPopup("{{ '@' . $item->username }}");
+                    .bindPopup(`<a href="/account/{{ $item->username }}">{{ '@' . $item->username }}</a>`);
                 @break
 
                 @case('rectangle')
@@ -66,14 +67,14 @@
                         weight: 1,
                         color: 'red'
                     }).addTo(map)
-                    .bindPopup("{{ '@' . $item->username }}");
+                    .bindPopup(`<a href="/account/{{ $item->username }}">{{ '@' . $item->username }}</a>`);
                 @break
 
                 @case('circle')
                 L.circle({!! $item->coordinat !!}, {
                         radius: "{{ $item->radius }}"
                     }).addTo(map)
-                    .bindPopup("{{ '@' . $item->username }}");
+                    .bindPopup(`<a href="/account/{{ $item->username }}">{{ '@' . $item->username }}</a>`);
                 @break
             @endswitch
         @endforeach

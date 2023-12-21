@@ -5,7 +5,7 @@
         <div class="flex flex-col gap-2 w-96 rounded shadow-lg bg-slate-200 p-3">
             <div class="flex justify-center items-center flex-col gap-2">
                 <div class="rounded-full h-16 w-16 bg-slate-400"></div>
-                <p>username</p>
+                <p>{{ request()->segment(count(request()->segments())) }}</p>
             </div>
             <div class="flex justify-center gap-2 mt-2">
                 <div class="flex justify-center items-center flex-col">
